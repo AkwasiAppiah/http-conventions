@@ -7,6 +7,7 @@ import {
   insertSignature,
   Signature,
   updateSignatureByEpoch,
+  removeSignatureByEpoch
 } from "./signature/model";
 import { resetMockFor } from "./test-utils";
 
@@ -207,15 +208,15 @@ describe("DELETE /signatures/:epoch", () => {
   });
 
   it("calls findSignatureByEpoch with the given epoch", async () => {
-    await supertest(app).get("/signatures/1614096121305");
-    expect(findSignatureByEpoch).toHaveBeenCalledWith(1614096121305);
+    await supertest(app).delete("/signatures/1614096121305");
+    expect(removeSignatureByEpoch).toHaveBeenCalledWith(1614096121305);
   });
 
   test("when findSignatureByEpoch returns a signature, it returns a 404 with an empty", async () => {
     const response = await supertest(app).delete(
       `/signatures/${passingSignature.epochId}`
     );
-    // expect(findSignatureByEpoch).toReturnWith(null);
+    expect(removeSignatureByEpoch).toReturnWith(undefined);
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("fail");
     expect(response.body.data).toHaveProperty("epochId");
@@ -227,7 +228,7 @@ describe("DELETE /signatures/:epoch", () => {
     const response = await supertest(app).delete(
       `/signatures/${passingSignature.epochId + 1}`
     );
-    // expect(findSignatureByEpoch).toReturnWith(null);
+    expect(removeSignatureByEpoch).toReturnWith(undefined);
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("fail");
     expect(response.body.data).toHaveProperty("epochId");
