@@ -190,3 +190,47 @@ describe("POST /signatures", () => {
     expect(response.body.data.name).toMatch(/required/);
   });
 });
+
+describe("DELETE /signatures/:epoch", () => {
+  const passingEpochId = 1614096121305;
+  const passingSignature = {
+    epochId: passingEpochId,
+    name: "Indiana Jones",
+  };
+
+  beforeEach(() => {
+    resetMockFor(findSignatureByEpoch, (epochId: number): Signature | null => {
+      // mock implementation:
+      // return a signature for a specific epochId, otherwise null
+      return epochId === passingSignature.epochId ? passingSignature : null;
+    });
+  });
+
+  it("calls findSignatureByEpoch with the given epoch", async () => {
+    await supertest(app).get("/signatures/1614096121305");
+    expect(findSignatureByEpoch).toHaveBeenCalledWith(1614096121305);
+  });
+
+  test("when findSignatureByEpoch returns a signature, it returns a 404 with an empty", async () => {
+    const response = await supertest(app).delete(
+      `/signatures/${passingSignature.epochId}`
+    );
+    // expect(findSignatureByEpoch).toReturnWith(null);
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("fail");
+    expect(response.body.data).toHaveProperty("epochId");
+    expect(response.body.data.epochId).toBe("Could not find a signature with that epoch identifier");
+  });
+
+  test("when findSignatureByEpoch returns null, it returns a 404 with information about not managing to find a signature", async () => {
+    // add one to get a non-passing epochId value
+    const response = await supertest(app).delete(
+      `/signatures/${passingSignature.epochId + 1}`
+    );
+    // expect(findSignatureByEpoch).toReturnWith(null);
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("fail");
+    expect(response.body.data).toHaveProperty("epochId");
+    expect(response.body.data.epochId).toMatch(/could not find/i);
+  });
+});
