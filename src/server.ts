@@ -5,7 +5,7 @@ import {
   getAllSignatures,
   insertSignature,
   removeSignatureByEpoch,
-  updateSignatureByEpoch
+  updateSignatureByEpoch,
 } from "./signature/model";
 
 const app = express();
@@ -21,11 +21,11 @@ app.use(cors());
 app.use(express.json());
 
 app.get("/signatures", (req, res) => {
-  const signatures = getAllSignatures()
+  const signatures = getAllSignatures();
   res.status(200).json({
     status: "success",
     data: {
-      signatures
+      signatures,
     },
   });
 });
@@ -77,27 +77,26 @@ app.get("/signatures/:epoch", (req, res) => {
   }
 });
 
-// app.put("/signatures/:epoch", (req, res) => {
-//   // :epoch is a route parameter
-//   //  see documentation: https://expressjs.com/en/guide/routing.html
-//   const epochId = parseInt(req.params.epoch); // params are string type
-//   const {name} = updateSignatureByEpoch(epochId);
-//   if (signature) {
-//     res.status(200).json({
-//       status: "success",
-//       data: {
-//         signature,
-//       },
-//     });
-//   } else {
-//     res.status(404).json({
-//       status: "fail",
-//       data: {
-//         epochId: "Could not find a signature with that epoch identifier",
-//       },
-//     });
-//   }
-// });
+app.put("/signatures/:epoch", (req, res) => {
+  const epochId = parseInt(req.params.epoch); // params are string type
+  const updatePerson = req.body;
+  const update = updateSignatureByEpoch(epochId, updatePerson) ;
+  if (update) {
+    res.status(200).json({
+      status: "success",
+      data: {
+        signature: update,
+      },
+    });
+  } else {
+    res.status(404).json({
+      status: "fail",
+      data: {
+        epochId: "Could not find name",
+      },
+    });
+  }
+});
 
 app.delete("/signatures/:epoch", (req, res) => {
   const epochId = parseInt(req.params.epoch); // params are string type
